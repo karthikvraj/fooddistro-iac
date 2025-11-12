@@ -1,0 +1,8 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - echo "✅ Unit 4 placeholder build successful"
+artifacts:
+  files:
+    - README.md
