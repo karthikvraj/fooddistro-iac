@@ -1,5 +1,5 @@
-# Very simple NGINX-based container
-FROM nginx:alpine
+# Very simple NGINX-based container using AWS Public ECR image
+FROM public.ecr.aws/nginx/nginx:stable-alpine
 
 # Remove default NGINX page and copy our own
 RUN rm -rf /usr/share/nginx/html/*
