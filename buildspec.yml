@@ -8,8 +8,8 @@ phases:
       - REGION=us-east-1        # change if you use another region
       - REPOSITORY=fooddistro-api
       - IMAGE_TAG=latest
-      - aws ecr get-login-password --region $REGION \
-        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
 
   build:
     commands:
@@ -22,8 +22,7 @@ phases:
       - echo Pushing Docker image to ECR...
       - docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG
       - echo Writing imagedefinitions.json file...
-      - printf '[{"name":"fooddistro-api","imageUri":"%s"}]' \
-        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"fooddistro-api","imageUri":"%s"}]' $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:
