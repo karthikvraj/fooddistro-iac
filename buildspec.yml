@@ -1,8 +1,30 @@
 version: 0.2
+
 phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - REGION=us-east-1        # change if you use another region
+      - REPOSITORY=fooddistro-api
+      - IMAGE_TAG=latest
+      - aws ecr get-login-password --region $REGION \
+        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
   build:
     commands:
-      - echo "✅ Unit 4 placeholder build successful"
+      - echo Building Docker image...
+      - docker build -t $REPOSITORY:$IMAGE_TAG .
+      - docker tag $REPOSITORY:$IMAGE_TAG $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG
+      - echo Writing imagedefinitions.json file...
+      - printf '[{"name":"fooddistro-api","imageUri":"%s"}]' \
+        $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY:$IMAGE_TAG > imagedefinitions.json
+
 artifacts:
   files:
-    - README.md
+    - imagedefinitions.json
