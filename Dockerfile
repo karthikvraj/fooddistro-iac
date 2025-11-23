@@ -1,9 +1,15 @@
-FROM public.ecr.aws/nginx/nginx:stable-alpine
+FROM python:3.11-slim
 
-# Remove default NGINX page
-RUN rm -rf /usr/share/nginx/html/*
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Copy your custom index page
-COPY index.html /usr/share/nginx/html/index.html
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
 
 EXPOSE 80
+
+CMD ["gunicorn", "-b", "0.0.0.0:80", "app:app"]
