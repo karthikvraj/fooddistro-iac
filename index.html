@@ -1,11 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>FoodDistro API</title>
+  <title>FoodDistro Backend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+      padding-top: 100px;
+    }
+  </style>
 </head>
 <body>
-  <h1>FoodDistro Backend</h1>
-  <p>This page is being served from the Docker container built by AWS CodeBuild and stored in ECR.</p>
+  <h1>FoodDistro Backend Running on ECS</h1>
+  <p>Deployed using CodeBuild → ECR → ECS → ALB</p>
+  <p>Status: ✅ Healthy</p>
+  <p>Timestamp: <span id="time"></span></p>
+
+  <script>
+    document.getElementById("time").innerText = new Date().toString();
+  </script>
 </body>
 </html>
