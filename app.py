@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 from datetime import datetime
+from decimal import Decimal  # <-- added for DynamoDB numeric handling
 
 from flask import Flask, jsonify, request, Response
 import boto3
@@ -646,7 +647,10 @@ def create_order():
         data = request.get_json(force=True, silent=True) or {}
         user_id = data.get("userId")
         session_id = data.get("sessionId")
-        total = float(data.get("total", 0.0))
+
+        # Use Decimal for DynamoDB, float for MySQL
+        raw_total = data.get("total", 0.0)
+        total = Decimal(str(raw_total))
 
         if not user_id or not session_id:
             return jsonify(error="userId and sessionId are required"), 400
@@ -668,7 +672,7 @@ def create_order():
                     INSERT INTO orders (order_id, user_id, session_id, total, created_at)
                     VALUES (%s, %s, %s, %s, %s)
                     """,
-                    (order_id, user_id, session_id, total, created_at),
+                    (order_id, user_id, session_id, float(total), created_at),
                 )
             conn.commit()
         finally:
@@ -679,7 +683,7 @@ def create_order():
             "orderId": order_id,
             "userId": user_id,
             "sessionId": session_id,
-            "total": total,
+            "total": total,  # Decimal for DynamoDB
             "items": items,
             "createdAt": created_at.isoformat() + "Z",
         })
@@ -688,7 +692,7 @@ def create_order():
             "orderId": order_id,
             "userId": user_id,
             "sessionId": session_id,
-            "total": total,
+            "total": float(total),
             "items": items,
             "createdAt": created_at.isoformat() + "Z",
         }
@@ -737,7 +741,9 @@ def get_order(order_id):
         resp = orders_ddb_table.get_item(Key={"orderId": order_id})
         item = resp.get("Item")
         if item:
-            # DynamoDB item already in API-friendly shape
+            # Convert Decimal to float for JSON
+            if isinstance(item.get("total"), Decimal):
+                item["total"] = float(item["total"])
             return jsonify(order=item), 200
 
         return jsonify(error="Order not found"), 404
